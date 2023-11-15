@@ -1,0 +1,2 @@
+GET http://localhost:3000/send/did:hid:testnet:zzEq4pzpjyEEjFmweHL9Kuo8z72bYcXJ1iTKjAAAgSz4
+Content-Type: application/json
