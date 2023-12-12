@@ -1,6 +1,10 @@
+import fetch from "node-fetch"
+import HypersignVerifiablePresentation from "hs-ssi-sdk"
+
 const sendRequest = async (req, res) => {
+  
     try {
-        const rpcUrl = 'https://api.jagrat.hypersign.id/hypersign-protocol/hidnode/ssi/did/';
+        const rpcUrl = 'https://hypersign-testnet-rest.stakerhouse.com/hypersign-protocol/hidnode/ssi/did/';
         const did = req.params.id;
         
         const response = await fetch(`${rpcUrl}${did}`);
@@ -23,13 +27,47 @@ const sendRequest = async (req, res) => {
             authenticationMethods: didDoc.authentication,
           };
           console.log(limitedDidDoc)
-        res.send(limitedDidDoc);
+        res.send({verified:true});
     } catch (error) {
         console.error('Error calling RPC:', error.message);
         res.status(500).send('Internal Server Error');
     }      
 };
 
+const verifyVp = async (req,res) =>{
+  console.log(req.body)
+  try {
+    console.log('on try')
+    const { presentation } = req.body.presentations;
+    console.log("HypersignVerifiablePresentation",HypersignVerifiablePresentation)
+    console.log('after 42')
+    const holderDid = presentation['holder'];
+    const issuerDid = presentation['verifiableCredential'][0]['issuer'];
+    const challenge = presentation['proof']['challenge'];
+    const hypersignVP = new HypersignVerifiablePresentation({
+      nodeRestEndpoint: "https://hypersign-testnet-rest.stakerhouse.com/",
+      nodeRpcEndpoint: "https://hypersign-testnet-rpc.stakerhouse.com/",
+      namespace: 'testnet',
+    });
+    await hypersignVP.init()
+    console.log("hypersignVP",hypersignVP)
+    const verifiedPresentationDetail = await hypersignVP.verify({
+      signedPresentation: presentation,
+      issuerDid,
+      holderDid,
+      holderVerificationMethodId: holderDid + '#key-1',
+      issuerVerificationMethodId: issuerDid + '#key-1',
+      challenge,
+    });
+    console.log("verifiedPresentationDetail",verifiedPresentationDetail)
+    
+    res.json(verifiedPresentationDetail)
+    
+  } catch (error) {
+    res.send(error)
+  }
+}
 export default {
-    sendRequest
+    sendRequest,
+    verifyVp
 };
