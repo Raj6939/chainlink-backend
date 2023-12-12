@@ -1,6 +1,7 @@
 import fetch from "node-fetch"
-import HypersignVerifiablePresentation from "hs-ssi-sdk"
-
+import {
+  HypersignVerifiablePresentation,
+} from 'hs-ssi-sdk';
 const sendRequest = async (req, res) => {
   
     try {
@@ -34,13 +35,11 @@ const sendRequest = async (req, res) => {
     }      
 };
 
-const verifyVp = async (req,res) =>{
-  console.log(req.body)
+const verifyVp = async (req, res, next) => {
   try {
     console.log('on try')
-    const { presentation } = req.body.presentations;
-    console.log("HypersignVerifiablePresentation",HypersignVerifiablePresentation)
-    console.log('after 42')
+    const { presentation } = req.body;
+
     const holderDid = presentation['holder'];
     const issuerDid = presentation['verifiableCredential'][0]['issuer'];
     const challenge = presentation['proof']['challenge'];
@@ -48,8 +47,8 @@ const verifyVp = async (req,res) =>{
       nodeRestEndpoint: "https://hypersign-testnet-rest.stakerhouse.com/",
       nodeRpcEndpoint: "https://hypersign-testnet-rpc.stakerhouse.com/",
       namespace: 'testnet',
-    });
-    await hypersignVP.init()
+    });  
+    
     console.log("hypersignVP",hypersignVP)
     const verifiedPresentationDetail = await hypersignVP.verify({
       signedPresentation: presentation,
